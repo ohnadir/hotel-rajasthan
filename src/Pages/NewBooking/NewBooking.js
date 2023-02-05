@@ -39,7 +39,7 @@ const NewBooking = ({ loadData }) => {
   ];
 // Due Amount
 // if (total < advanced) {
-//   totalDue = 0;
+//   totalDue = 0;``
 // } else if (total > advanced) {
 //   totalDue = total - advanced;
 // }
