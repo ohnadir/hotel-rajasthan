@@ -1,0 +1,9 @@
+.btnn {
+    background-color: rgb(238, 4, 241);
+    padding: 10px 20px;
+    margin-top: 8px;
+    color: #ffff;
+    font-size: 20px;
+    font-weight: 700;
+    border-radius: 10px;
+}

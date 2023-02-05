@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "name": [
+      "ac-room",
+      "double-room",
+      "ac-double-room",
+      "ac-single-room",
+      "ac-room",
+      "double-room",
+      "ac-double-room",
+      "ac-single-room"
+    ],
+    "price": [100, 200, 300, 400]
+  }
+]

@@ -1,0 +1,23 @@
+.pagination button {
+    color: #fff;
+    background-color: #717171;
+    padding: 4px 13px;
+    margin-left: 5px;
+    border-radius: 5px;
+}
+
+.pagination button.selected {
+    background-color: rgb(168, 0, 252);
+    color: #fff;
+}
+
+.seletedBtn {
+    border: none;
+    border-color: #ffff;
+    margin-left: 10px;
+    height: 30px;
+    width: 45px;
+    color: #ffff;
+    background-color: rgb(168, 0, 252);
+    border-radius: 5px;
+}
