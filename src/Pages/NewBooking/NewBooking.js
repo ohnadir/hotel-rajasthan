@@ -5,80 +5,40 @@ import MultiSelect from "react-multiple-select-dropdown-lite";
 import "react-multiple-select-dropdown-lite/dist/index.css";
 import Swal from "sweetalert2";
 import auth from "../../firebase.init";
-
+import photo from "../../assets/lock.png"
 
 // let totalDue = 0;
 
+const options = [
+  { label: "Non-AC Room", value: "Non-AC Room", price: 2000 },
+  { label: "AC Room", value: "AC Room", price: 4000 },
+  { label: "Non-AC Double Room", value: "Non-AC Double Room", price: 3500 },
+  { label: "AC Double Room", value: "AC Double Room", price: 7500 }
+];
 const NewBooking = ({ loadData }) => {
-  const { name } = loadData;
-  const [option, setOption] = useState()
-  const [value, setvalue] = useState("");
-  const [totalBooking, setTotalBooking] = useState({});
+  const { name, roomType } = loadData;
   const [users] = useAuthState(auth);
-  const [bookingDate, setBookingDate] = useState(new Date());
-  const [checkOutDate, setCheckOutDate] = useState(new Date());
-  const [count, setCount] = useState(
-    parseInt(localStorage.getItem("count")) || 1
-  );
-
-  useEffect(() => {
-    localStorage.setItem("count", count);
-  }, [count]);
-
-  const handleMultiply = (event) => {
-    setvalue(event);
-  };
+  const [option, setOption] = useState("");
+  const [rooms, setRooms] = useState([]);
+    useEffect( ()=>{
+        fetch("http://localhost:5000/rooms")
+        .then((res) => res.json())
+        .then(data => 
+            setRooms(data.result)
+        )
+    },[]);
   const handleChange = (e) => {
     setOption(prev=>({...prev, [e.target.name]:e.target.value}))
   }
-  const options = [
-    { label: "Single Room", value: "Single Room" },
-    { label: "Couple Room", value: "Couple Room" },
-    { label: "Option 3", value: "Ac Room" },
-    { label: "Option 4", value: "Ac Booking Room" },
-  ];
-// Due Amount
-// if (total < advanced) {
-//   totalDue = 0;``
-// } else if (total > advanced) {
-//   totalDue = total - advanced;
-// }
-  // Submit Btn
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // let status;
-    // if (totalDue === 0) {
-    //   status = "paid";
-    // } else if (totalDue > 0) {
-    //   status = "unpaid";
-    // }
 
-    const Booking = {
-      serialNumber: event.target.serial.value,
-      phone: event.target.phone.value,
-      gustName: event.target.gust.value,
-      parentName: event.target.parents.value,
-      emPhone: event.target.ephone.value,
-      totalGust: event.target.totalGust.value,
-      address: event.target.address.value,
-      nidCard: event.target.nidCard.value,
-      customerStatue: event.target.cusStatue.value,
-      nationality: event.target.national.value,
-      multiply: value,
-      seletedRoom: event.target.seletedRoom.value,
-      roomPrice: event.target.roomPrice.value,
-      roomQuantity: event.target.roomQuantity.value,
-      totalPrice: event.target.totalPrice.value,
-      advancedAmount: event.target.advancedAmount.value,
-      dueAmount: event.target.dueAmount.value,
-      logInDate: event.target.logindate.value,
-      logOutDate: event.target.logoutdate.value,
-      collection: event.target.collectionName.value,
-      message: event.target.message.value,
-    };
-    console.log(Booking);
-    console.log(users);
-
+  const data = rooms.find((item)=> item.room === Number(option.selectedRoom?.split("-")[0]) )
+  const advance = option?.advancedAmount ? option?.advancedAmount : ""; 
+  const total = data?.price ? data.price : "";
+  const due = total - advance ? total - advance : "";
+  const createdAt = new Date();
+  const Booking = {...option, total, due, date: createdAt};
+  console.log(Booking)
+  const handleSubmit = () => {
     fetch("http://localhost:5000/booking", {
       method: "POST",
       headers: {
@@ -87,22 +47,16 @@ const NewBooking = ({ loadData }) => {
       body: JSON.stringify(Booking),
     })
       .then((res) => res.json())
-      .then((data) => setTotalBooking(data));
-    Swal.fire(
-      "Booking Successfully!!",
-      "Thanks Your For Your Booking Information",
-      "success"
-    );
-    event.target.reset();
-  };
+      .then((data) => console.log(data));
+  }
   return (
     <div>
-      <h1 className="text-xl lg:text-4xl my-5 font-bold text-center text-black">
+      <h1 className="text-xl  lg:text-4xl my-5 font-bold text-center text-black">
         Welcome to <span className="text-fuchsia-500">Rajasthan</span> Hotel !!
       </h1>
       <div className="flex justify-between items-center px-5 relative">
         <div className="form-control w-full ">
-          <form onSubmit={handleSubmit}>
+          <form>
             <div className="flex justify-between mx-5 mb-5 items-center">
               <div>
                 <h4 className="font-bold text-black">Today Date And Time</h4>
@@ -123,8 +77,9 @@ const NewBooking = ({ loadData }) => {
                   </label>
                   <input
                     type="text"
-                    value={`Booking-${count}`}
                     name="serial"
+                    readOnly
+                    onChange={handleChange}
                     placeholder="Serial Number"
                     className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md focus:bg-neutral-400"
                   />
@@ -139,6 +94,7 @@ const NewBooking = ({ loadData }) => {
                 <input
                   type="text"
                   name="phone"
+                  onChange={handleChange}
                   placeholder="Enter Your Phone Number.."
                   className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md"
                   // required
@@ -150,6 +106,7 @@ const NewBooking = ({ loadData }) => {
                 </label>
                 <input
                   type="text"
+                  onChange={handleChange}
                   name="gust"
                   placeholder="Enter Your Gust Name.."
                   className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md"
@@ -163,6 +120,7 @@ const NewBooking = ({ loadData }) => {
                 <input
                   type="text"
                   name="parents"
+                  onChange={handleChange}
                   placeholder="Enter Your Parents Name.."
                   className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md"
                   // required
@@ -176,6 +134,7 @@ const NewBooking = ({ loadData }) => {
                 </label>
                 <input
                   type="text"
+                  onChange={handleChange}
                   name="ephone"
                   placeholder="Enter Your Emergency Contact.."
                   className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md"
@@ -188,6 +147,7 @@ const NewBooking = ({ loadData }) => {
                 </label>
                 <input
                   type="text"
+                  onChange={handleChange}
                   name="totalGust"
                   placeholder="Enter Total Gust.."
                   className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md"
@@ -201,6 +161,7 @@ const NewBooking = ({ loadData }) => {
                 <input
                   type="text"
                   id="yourAddress"
+                  onChange={handleChange}
                   name="address"
                   placeholder="Enter Your Address.."
                   className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md"
@@ -216,6 +177,7 @@ const NewBooking = ({ loadData }) => {
                 <input
                   type="text"
                   name="nidCard"
+                  onChange={handleChange}
                   placeholder="Enter Your NID/PassPort Card.."
                   className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md"
                   // required
@@ -231,6 +193,7 @@ const NewBooking = ({ loadData }) => {
                 <select
                   id="customerStatue"
                   name="cusStatue"
+                  onChange={handleChange}
                   className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md focus:bg-neutral-400"
                   // onChange={handleUpdateCake}
                   // required
@@ -265,6 +228,7 @@ const NewBooking = ({ loadData }) => {
                 <select
                   id="NationalityStatue"
                   name="national"
+                  onChange={handleChange}
                   className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md focus:bg-neutral-400"
                   // onChange={handleUpdateCake}
                   // required
@@ -289,35 +253,33 @@ const NewBooking = ({ loadData }) => {
                   </option>
                 </select>
               </div>
-              <div className="-mt-2">
-                <label className="label">
-                  <span className="text-black font-bold">MultiplyRoom :</span>
-                </label>
-                <MultiSelect onChange={handleMultiply} options={options} />
-              </div>
               <div>
                 <label
                   htmlFor="selectRo"
                   className="block mb-2 font-bold text-black  "
                 >
-                  Seleted Room
+                  Selected Room
                 </label>
                 <select
                   id="selectRo"
-                  name="seletedRoom"
+                  name="selectedRoom"
+                  onClick={handleChange}
                   className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md focus:bg-neutral-400"
-                  // onChange={handleUpdateCake}
-                  // required
+                  
                 >
-                  {name.map((nam) => (
-                    <option
-                      key={nam.id}
-                      value={nam}
-                      className="text-lg text-black"
-                    >
-                      {nam}
-                    </option>
-                  ))}
+                  <option value="" className="text-lg text-black"> Select Your Room</option>
+                  {
+                    rooms?.map((item) => (
+                      <option
+                        key={item._id}
+                        
+                        value={`${item.room}-${item.type}`}
+                        className="text-lg text-black"
+                      >
+                        {`${item.room}-${item.type}`}
+                      </option>
+                    ))
+                  }
                 </select>
               </div>
               <div className="-mt-2">
@@ -327,6 +289,7 @@ const NewBooking = ({ loadData }) => {
                 <input
                   name="roomPrice"
                   type="text"
+                  value={total}
                   placeholder="Enter Room Price.."
                   className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md focus:bg-neutral-400"
                   // required
@@ -342,27 +305,21 @@ const NewBooking = ({ loadData }) => {
                   id="roomQuant"
                   name="roomQuantity"
                   className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md focus:bg-neutral-400"
-                  // onChange={handleUpdateCake}
+                  onChange={handleChange}
+                  
                   // required
                 >
                   <option className="text-lg text-black" value="" selected>
                     Selected Room Quantity
                   </option>
-                  <option className="text-lg text-black" value="1">
-                    1
-                  </option>
-                  <option className="text-lg text-black" value="2">
-                    2
-                  </option>
-                  <option className="text-lg text-black" value="3">
-                    3
-                  </option>
-                  <option className="text-lg text-black" value="4">
-                    4
-                  </option>
-                  <option className="text-lg text-black" value="5">
-                    5
-                  </option>
+                  {
+                    [...Array(5).keys()].map(number => <option
+                      key={number}
+                      className="text-lg text-black" value={number + 1}>
+                        {number + 1}
+                    </option>)
+                  }
+                  
                 </select>
               </div>
 
@@ -373,6 +330,8 @@ const NewBooking = ({ loadData }) => {
                 <input
                   name="totalPrice"
                   type="text"
+                  value={total}
+                  onChange={handleChange}
                   placeholder="Total Room Price.."
                   className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md focus:bg-neutral-400"
                   // required
@@ -388,6 +347,7 @@ const NewBooking = ({ loadData }) => {
                   name="advancedAmount"
                   type="text"
                   placeholder="Enter Room Price.."
+                  onChange={handleChange}
                   className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md focus:bg-neutral-400"
                   // required
                 />
@@ -399,6 +359,8 @@ const NewBooking = ({ loadData }) => {
                 <input
                   name="dueAmount"
                   type="text"
+                  onChange={handleChange}
+                  value={due}
                   placeholder="Enter Room Price.."
                   className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md focus:bg-neutral-400"
                   // required
@@ -430,6 +392,7 @@ const NewBooking = ({ loadData }) => {
                   <input
                     type="text"
                     placeholder="Enter Advanced Amount.."
+                    onChange={handleChange}
                     className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md focus:bg-neutral-400"
                   />
                 </div>
@@ -442,6 +405,7 @@ const NewBooking = ({ loadData }) => {
                   <input
                     type="text"
                     placeholder="Enter Advanced Amount.."
+                    onChange={handleChange}
                     className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md focus:bg-neutral-400"
                   />
                 </div>
@@ -454,8 +418,8 @@ const NewBooking = ({ loadData }) => {
                   <input
                     // style={{ width: "280px" }}
                     type="date"
-                    name="logindate"
-                    onChange={(e) => setBookingDate(e.target.value)}
+                    name="checkin"
+                    onChange={handleChange}
                     id="logInDate"
                     className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md focus:bg-neutral-400"
                   />
@@ -470,8 +434,8 @@ const NewBooking = ({ loadData }) => {
                   <input
                     // style={{ width: "280px" }}
                     type="date"
-                    onChange={(e) => setCheckOutDate(e.target.value)}
-                    name="logoutdate"
+                    onChange={handleChange}
+                    name="checkout"
                     id="logOutDate"
                     className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md focus:bg-neutral-400"
                   />
@@ -501,41 +465,34 @@ const NewBooking = ({ loadData }) => {
                 className="btn mt-10 w-full max-w-xs hover:text-black bg-gradient-to-r from-fuchsia-500 via-purple-800 to-pink-500 text-white"
                 type="submit"
                 value="submit"
-                onClick={() => setCount(count + 1)}
+                onClick={handleSubmit}
               >
-                Booking Confirm
+                Confirm Booking 
               </button>
             </div>
           </form>
         </div>
       </div>
-      <div>
-        <h1 className="my-10 font-bold text-5xl text-center">
-          Today's <span className="text-fuchsia-500">Avaiable</span> Room
-        </h1>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
-          {name.map((nam) => (
-            // <option >{nam}</option>
-            <div key={nam.id} className="card bg-base-100 shadow-xl image-full">
-              <figure>
-                <img src="https://placeimg.com/400/225/arch" alt="Shoes" />
-              </figure>
-              <div className="card-body">
-                <h2 className="card-title text-white">{nam}</h2>
-                {/* <p className="text-white">
-                  Room Avaabile Now Choice Your Best Room
-                </p> */}
-                <div>
-                  <img
-                    className="h-10 w-10"
-                    src="../../assets/img.jpg"
-                    alt="Avator"
-                  />
-                </div>
-              </div>
+      <div className="px-6">
+            <h1 className="my-10  font-bold text-lg md:text-2xl lg:text-5xl text-center">
+            Today's <span className="text-fuchsia-500">Available</span> Room
+            </h1>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+                {
+                        rooms?.map((item) => (
+                            <div key={item._id} className="card bg-base-100 shadow-xl image-full">
+                                <figure>
+                                    <img src="https://placeimg.com/400/225/arch" alt="Shoes" />
+                                </figure>
+                                <div className="card-body flex justify-center items-center">
+                                    <p>{item.bookedDate === new Date().toISOString().slice(0, 10) ? item.bookedDate : ""}</p>
+                                    <h2 className="card-title text-white m-0">{item.room}-{item.type} </h2>
+                                    <img className="h-10 w-10" src={photo} alt="Avatar"/>
+                                </div>
+                            </div>
+                        ))
+                }
             </div>
-          ))}
-        </div>
       </div>
     </div>
   );

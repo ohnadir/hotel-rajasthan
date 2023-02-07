@@ -1,67 +1,65 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import { Table } from 'antd';
 
+
+const columns = [
+  {
+    title: 'Gust',
+    dataIndex: 'gust',
+    key: 'gust',
+  },
+  {
+    title: 'phone',
+    dataIndex: 'phone',
+    key: 'phone',
+  },
+  {
+    title: 'Address',
+    dataIndex: 'address',
+    key: 'address',
+  },
+  {
+    title: 'Nationality',
+    dataIndex: 'national',
+    key: 'national',
+  },
+  {
+    title: 'SelectedRoom',
+    dataIndex: 'selectedRoom',
+    key: 'selectedRoom',
+  },
+  {
+    title: 'Check in',
+    dataIndex: 'checkin',
+    key: 'checkin',
+  },
+  {
+    title: 'Advanced',
+    dataIndex: 'advancedAmount',
+    key: 'advancedAmount',
+  },
+  {
+    title: 'Total',
+    dataIndex: 'total',
+    key: 'total',
+  },
+  {
+    title: 'Due',
+    dataIndex: 'due',
+    key: 'due',
+  },
+];
 const Unpaid = () => {
-  const [getUnpaidBooking, setUnpaidBooking] = useState([]);
   const [search, setSearch] = useState("");
+  const [booking, setBooking] = useState([]);
 
-  //data load
-  const getData = async () => {
-    try {
-      const res = await fetch(
-        "http://localhost:5000/getUnpaidBooking"
-      );
-      const data = await res.json();
-      setUnpaidBooking(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  const filtered = getUnpaidBooking.filter((user) =>
-  user.phone.includes(search) ||
-  user.emPhone.includes(search));
-
-  
   useEffect(() => {
-    getData();
+    fetch("http://localhost:5000/due")
+      .then((res) => res.json())
+      .then((data) => setBooking(data.result));
   }, []);
-
-  const handleClickPaid = (id) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "Your Due Amount Paid Now !",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, Paid it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        fetch(`http://localhost:5000/handlePaidBooking/${id}`, {
-          method: "PUT",
-          headers: {
-            "content-type": "application/json",
-          },
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            // console.log(data);
-            if (data.acknowledged) {
-              Swal.fire(
-                "SuccessFully!",
-                "Your Order SuccessFull Paid Now !!",
-                "success"
-              );
-            } else {
-              Swal.fire("Oops...", "Something went wrong!!", "error");
-            }
-            const remaining = filtered.filter((usr) => usr._id !== id);
-            setUnpaidBooking(remaining);
-          });
-      }
-    });
-  };
-
+  const filter = booking?.filter((item)=>item.phone === String(search));
   return (
     <>
       <div>
@@ -89,128 +87,7 @@ const Unpaid = () => {
           />
         </div>
         <div className="overflow-x-auto w-full">
-          <table className="table w-full">
-            <thead>
-              <tr>
-                <th>Sl No</th>
-                <th>Phone/Name</th>
-                <th>PaName/EmPhone</th>
-                <th>Room/Quantity</th>
-                <th>NID/Nationality</th>
-                <th>OrderID</th>
-                <th>Address/customerStatue</th>
-                <th>Price/Quantity</th>
-                <th>TPrice/APrice</th>
-                <th>Collection</th>
-                <th>Message</th>
-                <th>Edit</th>
-                <th>Remove</th>
-              </tr>
-            </thead>
-            {filtered.map((user, index) => (
-              <tbody>
-                <tr key={index}>
-                  <th>{index + 1}</th>
-                  <td>
-                    <div className="flex items-center space-x-3">
-                      <div>
-                        <div className="font-bold">{user.phone}</div>
-                        <div className="text-sm opacity-50">
-                          {user.gustName}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    {user.parentName}
-                    <br />
-                    <span className="badge badge-ghost badge-sm">
-                      {user.emPhone}
-                    </span>
-                  </td>
-                  <td>
-                    {user.seletedRoom}
-                    <br />
-                    <span className="badge badge-ghost badge-sm">
-                      {user.roomQuantity}
-                    </span>
-                  </td>
-                  <td>
-                    {user.nidCard}
-                    <br />
-                    <span className="badge badge-ghost badge-sm">
-                      {user.nationality}
-                    </span>
-                  </td>
-                  <td>{user.serialNumber}</td>
-                  <td>
-                    {user.address}
-                    <br />
-                    <span className="badge badge-ghost badge-sm">
-                      {user.customerStatue}
-                    </span>
-                  </td>
-                  <td>
-                    {user.roomPrice}
-                    <br />
-                    <span className="badge badge-ghost badge-sm">
-                      {user.roomQuantity}
-                    </span>
-                  </td>
-                  <td>
-                    {user.totalPrice}
-                    <br />
-                    <span className="badge badge-ghost badge-sm">
-                      {user.advancedAmount}
-                    </span>
-                  </td>
-                  <td>{user.collection}</td>
-                  <td>
-                    <textarea
-                      cols={30}
-                      rows={2}
-                      defaultValue={user?.message}
-                      style={{
-                        width: "200px",
-                        fontSize: "13px",
-                        background: "none",
-                        color: "black",
-                        borderRadius: "5px",
-                        padding: "2px",
-                      }}
-                      readOnly
-                    ></textarea>
-                  </td>
-                  <th>
-                    <td>
-                      <>
-                        <span
-                          className={
-                            user?.status === "unpaid"
-                              ? "bg-yellow-300 rounded-full px-3 py-1 text-yellow-500 bg-opacity-40"
-                              : "bg-green-300 rounded-full px-3 py-1 text-green-500 bg-opacity-40"
-                          }
-                        >
-                          {user?.status}
-                        </span>
-                        {user?.status !== "paid" ? (
-                          <button
-                            className="btn btn-primary btn-xs ml-3 text-white "
-                            onClick={() => handleClickPaid(user?._id)}
-                          >
-                            Paid Now
-                          </button>
-                        ) : null}
-                      </>
-                    </td>
-                  </th>
-                </tr>
-                <tr>
-                  <div></div>
-                </tr>
-              </tbody>
-            ))}
-          </table>
+          <Table dataSource={booking} pagination={false} columns={columns} />
         </div>
       </div>
     </>

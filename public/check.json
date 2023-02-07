@@ -1,16 +1,8 @@
 [
   {
     "id": 1,
-    "name": [
-      "ac-room",
-      "double-room",
-      "ac-double-room",
-      "ac-single-room",
-      "ac-room",
-      "double-room",
-      "ac-double-room",
-      "ac-single-room"
-    ],
+    "name": ["Select your room", 200,201,202, 203,204,205,206,207,208,209,210 ],
+    "roomType" : ["Non-AC Room", "AC Room", "Non-AC Double Room", "AC Double Room"],
     "price": [100, 200, 300, 400]
   }
 ]

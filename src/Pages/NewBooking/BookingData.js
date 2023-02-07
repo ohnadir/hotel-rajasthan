@@ -8,7 +8,7 @@ const Today = () => {
         fetch("check.json")
         .then((res) => res.json())
         .then(data =>setDataLoad(data))
-    })
+    },[]);
   return (
     <div>
       {
