@@ -3,41 +3,27 @@ import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import MultiSelect from "react-multiple-select-dropdown-lite";
 import "react-multiple-select-dropdown-lite/dist/index.css";
-import Swal from "sweetalert2";
 import auth from "../../firebase.init";
 import photo from "../../assets/lock.png"
 
-// let totalDue = 0;
-
-const options = [
-  { label: "Non-AC Room", value: "Non-AC Room", price: 2000 },
-  { label: "AC Room", value: "AC Room", price: 4000 },
-  { label: "Non-AC Double Room", value: "Non-AC Double Room", price: 3500 },
-  { label: "AC Double Room", value: "AC Double Room", price: 7500 }
-];
-const NewBooking = ({ loadData }) => {
-  const { name, roomType } = loadData;
+const NewBooking = ({ serials, rooms }) => {
   const [users] = useAuthState(auth);
   const [option, setOption] = useState("");
-  const [rooms, setRooms] = useState([]);
-    useEffect( ()=>{
-        fetch("http://localhost:5000/rooms")
-        .then((res) => res.json())
-        .then(data => 
-            setRooms(data.result)
-        )
-    },[]);
   const handleChange = (e) => {
     setOption(prev=>({...prev, [e.target.name]:e.target.value}))
   }
 
+  let few = 0;
+  if(serials){
+    few  = Math.max(...serials?.map(n => n?.serialNumber))
+  }
+  const serialNumber = few ? parseInt(few) + 1 : 0 + 1;
   const data = rooms.find((item)=> item.room === Number(option.selectedRoom?.split("-")[0]) )
   const advance = option?.advancedAmount ? option?.advancedAmount : ""; 
   const total = data?.price ? data.price : "";
   const due = total - advance ? total - advance : "";
   const createdAt = new Date();
-  const Booking = {...option, total, due, date: createdAt};
-  console.log(Booking)
+  const Booking = {...option, total, due, date: createdAt, serialNumber};
   const handleSubmit = () => {
     fetch("http://localhost:5000/booking", {
       method: "POST",
@@ -78,8 +64,8 @@ const NewBooking = ({ loadData }) => {
                   <input
                     type="text"
                     name="serial"
+                    value={`Booking-${few + 1}`}
                     readOnly
-                    onChange={handleChange}
                     placeholder="Serial Number"
                     className="w-full text-xs lg:text-sm outline outline-purple-500 outline-1 p-2 pl-3 rounded focus:ring-2 focus:ring-blue-500 focus:shadow-2xl  focus:font-bold focus:text-fuchsia-600 shadow-md focus:bg-neutral-400"
                   />
